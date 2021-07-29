@@ -14,22 +14,50 @@ type Link struct {
 	User    *users.User
 }
 
-func (l Link) Save() {
-	stmt, err := database.Db.Prepare("INSERT INTO Links(Title,Address) VALUES($1,$2)")
+// Inserts a new Link into the database
+func (l Link) Save() int64 {
+	query := `
+		INSERT INTO 
+			links(Title,Address) 
+		VALUES
+			($1,$2) 
+		RETURNING id`
+	stmt, err := database.Db.Prepare(query)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer stmt.Close()
 
-	_, err = stmt.Exec(l.Title, l.Address)
+	// retrieve last id from returning sql statement
+	var id int64
+	err = stmt.QueryRow(l.Title, l.Address).Scan(&id)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Row inserted!")
+	return id
+}
 
-	//#5
-	// id, err := res.LastInsertId()
-	// if err != nil {
-	// 	log.Fatal("Error:", err.Error())
-	// }
-	// return id
+func (l Link) GetAll() []Link {
+	query := `
+		SELECT id, title, address FROM links
+	`
+	stmt, err := database.Db.Prepare(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	var links []Link
+	r, err := stmt.Query()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for r.Next() {
+		var link Link
+		err := r.Scan(&link.ID, &link.Title, &link.Address)
+		if err != nil {
+			log.Fatal(err)
+		}
+		links = append(links, link)
+	}
+	return links
 }

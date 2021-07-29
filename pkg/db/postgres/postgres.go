@@ -21,12 +21,8 @@ func InitDB() {
 	if err != nil {
 		log.Panic("Failed to load enironment variable file:", err)
 	}
-	// psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-	// "password=%s dbname=%s sslmode=disable",
-	// host, port, user, password, dbname)
-	postgresConfig := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
-	fmt.Println("postgresConfig", postgresConfig)
-	db, err := sql.Open("postgres", postgresConfig)
+
+	db, err := sql.Open("postgres", fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME")))
 	if err != nil {
 		log.Panic(err)
 	}

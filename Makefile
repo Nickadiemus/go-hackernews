@@ -22,4 +22,10 @@ migrateup: cmd-exists-migrate
 migratedown: cmd-exists-migrate
 	migrate -path ./pkg/db/migrations -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down
 
-.PHONY: postgres createdb dropdb migrateup migratedown
+start-db:
+	docker start go-hackernews-db
+
+start: 
+	go run ./cmd/server.go
+
+.PHONY: postgres createdb dropdb migrateup migratedown start start-db

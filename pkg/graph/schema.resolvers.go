@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/nickadiemus/go-hackernews/pkg/graph/generated"
 	"github.com/nickadiemus/go-hackernews/pkg/graph/model"
@@ -16,8 +17,8 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input model.NewLink) 
 	var link links.Link
 	link.Title = input.Title
 	link.Address = input.Address
-	link.Save()
-	return &model.Link{Title: link.Title, Address: link.Address}, nil
+	id := link.Save()
+	return &model.Link{Title: link.Title, Address: link.Address, ID: strconv.FormatInt(id, 10)}, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
@@ -33,15 +34,13 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 }
 
 func (r *queryResolver) Links(ctx context.Context) ([]*model.Link, error) {
-	// TODO: Created query for links
-	var links []*model.Link
-	dummyData := model.Link{
-		Title:   "our dummy link",
-		Address: "https://address.org",
-		User:    &model.User{Name: "admin"},
+	var link links.Link
+	var resultLinks []*model.Link
+	dbLinks := link.GetAll()
+	for _, link := range dbLinks {
+		resultLinks = append(resultLinks, &model.Link{ID: link.ID, Title: link.Title, Address: link.Address})
 	}
-	links = append(links, &dummyData)
-	return links, nil
+	return resultLinks, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
